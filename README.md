@@ -20,7 +20,7 @@ By our implementation is however easy to modify those constraints into different
 
 ### Screenshots
 
-![screen#1](./imgs/screen#1.png)
+![screen#1](./imgs/home.png)
 ![screen#2](./imgs/gun.gif)
 
 ### What the user can do
