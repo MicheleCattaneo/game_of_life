@@ -11,8 +11,39 @@ import java.util.LinkedList;
  */
 public class Compute {
 
+    private int n = Runtime.getRuntime().availableProcessors();
+    private static final ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(n);
+
     private Compute() {
         // Never instantiated. This class is a collection of functionalities.
+    }
+
+    static class RowThreadTask implements Runnable{
+        private final int row;
+        private final Grid grid1;
+        private final Grid grid2;
+        private final Neighborhood neighborhood;
+
+        private RowThreadTask(final Neighborhood neighborhood, final Grid grid1,
+                              final Grid grid2, final int row){
+            this.row = row;
+            this.grid1 = grid1;
+            this.grid2 = grid2;
+            this.neighborhood = neighborhood;
+        }
+        @Override
+        public void run() {
+
+            int numberOfLiveNeighbors;
+            LinkedList<int[]> currentNeighborhood;
+
+            for (int j = 0; j < grid1.getColumns(); j++) {
+                currentNeighborhood = neighborhood.getNeighbors(grid1, row, j);
+                numberOfLiveNeighbors = countNumberAliveCells(currentNeighborhood, grid1);
+                changeStateAccordingToGameOfLifeRules(grid1.getCell(row, j),
+                        grid2.getCell(row, j), numberOfLiveNeighbors);
+            }
+        }
     }
 
     /**
@@ -23,16 +54,9 @@ public class Compute {
      */
     public static void computeNextGrid(final Neighborhood neighborhood, final Grid grid1,
                                        final Grid grid2) {
-        int numberOfLiveNeighbors;
-        LinkedList<int[]> currentNeighborhood;
-
         for (int i = 0; i < grid1.getRows(); i++) {
-            for (int j = 0; j < grid1.getColumns(); j++) {
-                currentNeighborhood = neighborhood.getNeighbors(grid1, i, j);
-                numberOfLiveNeighbors = countNumberAliveCells(currentNeighborhood, grid1);
-                changeStateAccordingToGameOfLifeRules(grid1.getCell(i, j),
-                        grid2.getCell(i, j), numberOfLiveNeighbors);
-            }
+            //new Thread(new RowThread(neighborhood, grid1, grid2, i)).start();
+            pool.submit(new RowThreadTask(neighborhood, grid1, grid2, i));
         }
     }
 
